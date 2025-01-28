@@ -1,61 +1,42 @@
 ﻿using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.Extensions.Configuration;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
 using System.Text.Json;
 using Xabe.FFmpeg;
 
 namespace Application.UseCases
 {
-    public class ProcessVideoUseCase : IProcessVideoUseCase
+    public class ProcessVideoUseCase(
+        IVideoPort videoPort,
+        IQueuePort queuePort,
+        IStoragePort storagePort
+            , IConfiguration configuration
+            ) : IProcessVideoUseCase
     {
-        private readonly IVideoPort _videoPort;
-        private readonly IQueuePort _queuePort;
-        private readonly IStoragePort _storagePort;
+        private readonly IVideoPort _videoPort = videoPort;
+        private readonly IQueuePort _queuePort = queuePort;
+        private readonly IStoragePort _storagePort = storagePort;
 
-        private string _downloadPath;
-        private string _chunkPath;
-
-        public ProcessVideoUseCase(
-            IVideoPort videoPort,
-            IQueuePort queuePort,
-            IStoragePort storagePort
-            ,IConfiguration configuration
-            )
-        {
-            _videoPort = videoPort;
-            _queuePort = queuePort;
-            _storagePort = storagePort;
-
-            _downloadPath = configuration["FilePath:DownloadPath"];
-            _chunkPath = configuration["FilePath:ChunkPath"];
-        }
+        private string _downloadPath = configuration["FilePath:DownloadPath"];
+        private string _chunkPath = configuration["FilePath:ChunkPath"];
+        private string _sourceBucket = configuration["AWS:S3:SourceBucketName"];
+        private string _destinationBucket = configuration["AWS:S3:DestinationBucketName"];
 
         public async void Process()
         {
 
             try
             {
-                //var chunk1 = new Chunk()
-                //{
-
-                //    Id = "teste.mp4",
-                //    Duration = new TimeSpan(0,1,0),
-                //};
-                //_videoGateway.SaveChunk(chunk1);
-
                 string videoId = _queuePort.ConsumeMessage();
 
-                string inputFilePath = Path.Combine(_downloadPath, $"{videoId}.mp4");
-                await SaveVideo(videoId, inputFilePath);
+                string inputFilePath = Path.Combine(_downloadPath, $"{videoId}");
+                await _storagePort.DownloadVideoAsync(videoId, inputFilePath);
 
                 var chunks = await SplitIntoChunks(videoId, inputFilePath);
 
                 foreach (var chunk in chunks)
                 {
-                    //await _storageGateway.UploadChunkAsync("destination-bucket", chunk.Data);
+                    await _storagePort.UploadChunkAsync(chunk.Id, _chunkPath);
 
                     _videoPort.SaveChunk(chunk);
 
@@ -68,21 +49,12 @@ namespace Application.UseCases
 
                 File.Delete(inputFilePath);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }            
         }
 
-        private async Task SaveVideo(string videoId, string filePath)
-        {
-            var videoStream = await _storagePort.DownloadVideoAsync("source-bucket", videoId);
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-            {
-                await videoStream.CopyToAsync(fileStream);
-            }
-        }
 
         private async Task<IEnumerable<Chunk>> SplitIntoChunks(string videoId, string inputFile)
         {
@@ -91,7 +63,6 @@ namespace Application.UseCases
 
             Directory.CreateDirectory(_chunkPath);
 
-            // Get the duration of the video
             var mediaInfo = await FFmpeg.GetMediaInfo(inputFile);
             TimeSpan duration = mediaInfo.Duration;
 
@@ -107,7 +78,6 @@ namespace Application.UseCases
                     string chunkName = $"{videoId}_part{partNumber}.mp4";
                     string outputFilePath = Path.Combine(_chunkPath, chunkName);
 
-                    // Split the video part
                     await FFmpeg.Conversions.New()
                         .AddParameter($"-i {inputFile} -ss {startTime} -t {partDuration} -c copy {outputFilePath}")
                         .Start();

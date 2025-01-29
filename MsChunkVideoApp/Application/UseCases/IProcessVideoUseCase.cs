@@ -4,6 +4,6 @@ namespace Application.UseCases
 {
     public interface IProcessVideoUseCase
     {
-        public void Process();
+        public Task Process();
     }
 }

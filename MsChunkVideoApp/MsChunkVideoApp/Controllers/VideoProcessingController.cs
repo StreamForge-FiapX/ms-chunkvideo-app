@@ -16,17 +16,20 @@ namespace MsChunkVideoApp.Controllers
 
         // GET: api/<VideoController>
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            _processVideoUseCase.Process();
+            await _processVideoUseCase.Process();
 
             return Ok();
         }
 
         // POST api/<VideoController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> PostAsync()
         {
+            await _processVideoUseCase.Process();
+
+            return Ok();
         }
 
         // PUT api/<VideoController>/5

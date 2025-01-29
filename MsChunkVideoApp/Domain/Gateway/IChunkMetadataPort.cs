@@ -1,8 +1,8 @@
 ﻿using Domain.Entities;
 
-namespace Domain.Repositories
+namespace Domain.Gateway
 {
-    public interface IVideoPort
+    public interface IChunkMetadataPort
     {
         void SaveChunk(Chunk chunk);
     }

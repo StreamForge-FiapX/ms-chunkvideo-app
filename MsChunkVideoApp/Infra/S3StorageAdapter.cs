@@ -2,21 +2,22 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
+using Domain.Gateway;
 using Microsoft.Extensions.Configuration;
 
 namespace Application.UseCases
 {
-    public class StorageAdapter : IStoragePort
+    public class S3StorageAdapter : IStoragePort
     {
         private readonly string _SourceBucketName;
-        private readonly string _DestinationBucketName;        
-        private readonly string _serviceUrl;        
-        private readonly string _region;        
-        private readonly string _accessKey;        
-        private readonly string _secretKey;        
-        private readonly string _downloadPath;        
+        private readonly string _DestinationBucketName;
+        private readonly string _serviceUrl;
+        private readonly string _region;
+        private readonly string _accessKey;
+        private readonly string _secretKey;
+        private readonly string _downloadPath;
 
-        public StorageAdapter(IConfiguration configuration)
+        public S3StorageAdapter(IConfiguration configuration)
         {
             _SourceBucketName = configuration["AWS:S3:SourceBucketName"];
             _DestinationBucketName = configuration["AWS:S3:DestinationBucketName"];
@@ -31,8 +32,6 @@ namespace Application.UseCases
             var credentials = new BasicAWSCredentials(_accessKey, _secretKey);
 
             string keyName = videoId;
-            string localFilePath = Path.Combine(inputFilePath, videoId);
-
 
             var s3Client = new AmazonS3Client(credentials, new AmazonS3Config
             {
@@ -42,23 +41,15 @@ namespace Application.UseCases
                 AuthenticationRegion = _region,
             });
 
-            try
+            var request = new GetObjectRequest
             {
+                BucketName = _SourceBucketName,
+                Key = keyName
+            };
 
-                var request = new GetObjectRequest
-                {
-                    BucketName = _SourceBucketName,
-                    Key = keyName
-                };
-
-                using (GetObjectResponse response = await s3Client.GetObjectAsync(request))
-                {
-                    await response.WriteResponseStreamToFileAsync(localFilePath, false, CancellationToken.None);
-                }
-            }
-            catch (Exception)
+            using (GetObjectResponse response = await s3Client.GetObjectAsync(request))
             {
-                throw;
+                await response.WriteResponseStreamToFileAsync(inputFilePath, false, CancellationToken.None);
             }
         }
 
@@ -76,15 +67,7 @@ namespace Application.UseCases
 
             var fileTransferUtility = new TransferUtility(s3Client);
 
-            try
-            {
-                await fileTransferUtility.UploadAsync(filePath, _DestinationBucketName, key);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-
+            await fileTransferUtility.UploadAsync(filePath, _DestinationBucketName, key);
         }
     }
 }

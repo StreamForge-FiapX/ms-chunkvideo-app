@@ -1,5 +1,4 @@
-﻿using Application.UseCases;
-using Domain.Entities;
+﻿using Domain.Gateway;
 using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -7,7 +6,7 @@ using System.Text;
 
 namespace Infra
 {
-    public class QueueAdapter : IQueuePort
+    public class RabbitMqAdapter : IMessageQueuePort
     {
         private string _hostName;
         private string _user;
@@ -15,7 +14,7 @@ namespace Infra
         private string _queueNameIn;
         private string _queueNameOut;
 
-        public QueueAdapter(IConfiguration configuration)
+        public RabbitMqAdapter(IConfiguration configuration)
         {
             _hostName = configuration["RabbitMQ:HostName"];
             _user = configuration["RabbitMQ:User"];
@@ -39,13 +38,12 @@ namespace Infra
 
             IModel channel = connection.CreateModel();
 
-            string exchangeName = "DemoExchange";
-            string routingkey = "demo-routing-key";
-            string queueName = _queueNameIn;
+            string exchangeName = "VideoExchange";
+            string routingkey = "video-routing-key";
 
             channel.ExchangeDeclare(exchangeName, ExchangeType.Direct);
-            channel.QueueDeclare(queueName, false, false, false, null);
-            channel.QueueBind(queueName, exchangeName, routingkey, null);
+            channel.QueueDeclare(_queueNameIn, false, false, false, null);
+            channel.QueueBind(_queueNameIn, exchangeName, routingkey, null);
             channel.BasicQos(0, 1, false);
 
             var consumer = new EventingBasicConsumer(channel);
@@ -58,7 +56,7 @@ namespace Infra
                 channel.BasicAck(args.DeliveryTag, false);
             };
 
-            string consumerTag = channel.BasicConsume(queueName, false, consumer);
+            string consumerTag = channel.BasicConsume(_queueNameIn, false, consumer);
 
             channel.BasicCancel(consumerTag);
 
@@ -80,17 +78,12 @@ namespace Infra
 
             IModel channel = connection.CreateModel();
 
-            string exchangeName = "DemoExchange";
-            string routingkey = "demo-routing-key";
-            string queueName = _queueNameOut;
+            string exchangeName = "ChunkExchange";
+            string routingkey = "chunk-routing-key";
 
             channel.ExchangeDeclare(exchangeName, ExchangeType.Direct);
-            channel.QueueDeclare(queueName, false, false, false, null);
-            channel.QueueBind(queueName, exchangeName, routingkey, null);
-
-            channel.ExchangeDeclare(exchangeName, ExchangeType.Direct);
-            channel.QueueDeclare(queueName, false, false, false, null);
-            channel.QueueBind(queueName, exchangeName, routingkey, null);
+            channel.QueueDeclare(_queueNameOut, false, false, false, null);
+            channel.QueueBind(_queueNameOut, exchangeName, routingkey, null);            
 
             byte[] messageBodyBytes = Encoding.UTF8.GetBytes(message);
             channel.BasicPublish(exchangeName, routingkey, null, messageBodyBytes);

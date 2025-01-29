@@ -1,17 +1,16 @@
 ﻿using Dapper;
 using Domain.Entities;
-using Domain.Repositories;
-using Microsoft.Data.SqlClient;
+using Domain.Gateway;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 
 namespace Infra
 {
-    public class VideoAdapter : IVideoPort
+    public class ChunkMetadataAdapter : IChunkMetadataPort
     {
         private string _connectionString;
 
-        public VideoAdapter(IConfiguration configuration)
+        public ChunkMetadataAdapter(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
@@ -23,10 +22,11 @@ namespace Infra
                 connection.Open();
 
                 var parameters = new DynamicParameters();
-                parameters.Add("name", chunk.Id);
-                parameters.Add("duration", chunk.Duration);
+                parameters.Add("chunkname", chunk.ChunkName);
+                parameters.Add("videoName", chunk.VideoName);
+                parameters.Add("destinationBucket", chunk.DestinationBucket);
 
-                string sqlCommand = "INSERT INTO chunk(name, duration) VALUES(@name, @duration)";
+                string sqlCommand = "INSERT INTO chunk(chunkname, videoName, destinationBucket) VALUES(@chunkname, @videoName, @destinationBucket)";
 
                 connection.Execute(sqlCommand, parameters);
             }

@@ -1,8 +1,8 @@
 ﻿using Domain.Entities;
 
-namespace Application.UseCases
+namespace Domain.Gateway
 {
-    public interface IQueuePort
+    public interface IMessageQueuePort
     {
         string ConsumeMessage();
         void PublishMessage(string message);

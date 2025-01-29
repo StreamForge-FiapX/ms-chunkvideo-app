@@ -2,9 +2,9 @@
 {
     public class Chunk
     {
-        public string Id { get; set; }
-        public string VideoId { get; set; }
-        public TimeSpan Duration { get; set; }
+        public string ChunkName { get; set; }
+        public string VideoName { get; set; }
+        public string DestinationBucket { get; set; }
         public string TempFolderPath { get; set; }
     }
 }

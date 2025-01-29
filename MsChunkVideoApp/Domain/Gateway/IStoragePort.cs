@@ -1,10 +1,8 @@
-﻿using Domain.Entities;
-
-namespace Application.UseCases
+﻿namespace Domain.Gateway
 {
     public interface IStoragePort
     {
-        public Task DownloadVideoAsync(string key, string videoId);
-        public Task UploadChunkAsync(string key, string filePath);
+        Task DownloadVideoAsync(string key, string videoId);
+        Task UploadChunkAsync(string key, string filePath);
     }
 }

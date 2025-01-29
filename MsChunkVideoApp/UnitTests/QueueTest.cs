@@ -20,13 +20,13 @@ namespace UnitTests
 
             string exchangeName = "DemoExchange";
             string routingkey = "demo-routing-key";
-            string queueName = "PendingVideos";
+            string queueName = "queue-uploaded-video";
 
             channel.ExchangeDeclare(exchangeName, ExchangeType.Direct);
             channel.QueueDeclare(queueName, false, false, false, null);
             channel.QueueBind(queueName, exchangeName, routingkey, null);
 
-            byte[] messageBodyBytes = Encoding.UTF8.GetBytes("videoplayback");
+            byte[] messageBodyBytes = Encoding.UTF8.GetBytes("videoplayback.mp4");
             channel.BasicPublish(exchangeName, routingkey, null, messageBodyBytes);
 
             channel.Close();
@@ -46,7 +46,7 @@ namespace UnitTests
 
             string exchangeName = "DemoExchange";
             string routingkey = "demo-routing-key";
-            string queueName = "PendingVideos";
+            string queueName = "queue-uploaded-video";
 
             channel.ExchangeDeclare(exchangeName, ExchangeType.Direct);
             channel.QueueDeclare(queueName, false, false, false, null);

@@ -77,7 +77,7 @@ namespace UnitTests
             //}
             var credentials = new Amazon.Runtime.BasicAWSCredentials("test", "test");
 
-            string bucketName = "source-bucket-localstack";
+            string bucketName = "uploaded-video-bucket";
             string filePath = @"D:\Temp\InputDir\videoplayback.mp4";
             string keyName = "videoplayback.mp4"; // Nome desejado para o arquivo no S3
 

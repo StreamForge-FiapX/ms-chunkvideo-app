@@ -1,6 +1,7 @@
 using Application.UseCases;
-using Domain.Repositories;
+using Domain.Gateway;
 using Infra;
+using WebApi.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +16,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IProcessVideoUseCase, ProcessVideoUseCase>();
 
 // Register infrastructure services
-builder.Services.AddSingleton<IStoragePort, StorageAdapter>();
-builder.Services.AddSingleton<IVideoPort, VideoAdapter>();
-builder.Services.AddSingleton<IQueuePort, QueueAdapter>();
+builder.Services.AddTransient<IStoragePort, S3StorageAdapter>();
+builder.Services.AddTransient<IChunkMetadataPort, ChunkMetadataAdapter>();
+builder.Services.AddTransient<IMessageQueuePort, RabbitMqAdapter>();
+builder.Services.AddTransient<IVideoProcessorPort, VideoProcessorAdapter>();
 
 // Add RabbitMQ configuration (replace with your actual configuration)
 //builder.Services.Configure<RabbitMQOptions>(builder.Configuration.GetSection("RabbitMQ"));
@@ -34,6 +36,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 app.MapControllers();
 

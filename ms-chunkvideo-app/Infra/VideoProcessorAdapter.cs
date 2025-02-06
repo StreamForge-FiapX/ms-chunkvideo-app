@@ -1,13 +1,14 @@
 ﻿using Domain.Gateway;
+using Microsoft.Extensions.Configuration;
 using Xabe.FFmpeg;
 
 namespace Infra
 {
     public class VideoProcessorAdapter : IVideoProcessorPort
     {
-        public VideoProcessorAdapter() {
+        public VideoProcessorAdapter(IConfiguration configuration) {
             
-            FFmpeg.SetExecutablesPath(@"C:\FFmpeg\bin");
+            FFmpeg.SetExecutablesPath(configuration["FFmpeg:ExecutablePath"]);
         }
 
         public async Task SaveFile(string inputFile, TimeSpan startTime, TimeSpan partDuration, string outputFilePath)

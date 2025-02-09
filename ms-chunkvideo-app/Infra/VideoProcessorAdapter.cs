@@ -6,21 +6,22 @@ namespace Infra
 {
     public class VideoProcessorAdapter : IVideoProcessorPort
     {
-        public VideoProcessorAdapter(IConfiguration configuration) {
+        private readonly IFFmpegWrapper _ffmpegWrapper;
+
+        public VideoProcessorAdapter(IConfiguration configuration, IFFmpegWrapper ffmpegWrapper) {
             
             FFmpeg.SetExecutablesPath(configuration["FFmpeg:ExecutablePath"]);
+            _ffmpegWrapper = ffmpegWrapper;
         }
 
         public async Task SaveFile(string inputFile, TimeSpan startTime, TimeSpan partDuration, string outputFilePath)
         {
-            await FFmpeg.Conversions.New()
-                .AddParameter($"-i {inputFile} -ss {startTime} -t {partDuration} -c copy {outputFilePath}")
-                .Start();
+            await _ffmpegWrapper.StartConversion(inputFile, startTime, partDuration, outputFilePath);
         }
 
         public async Task<IMediaInfo> GetMediaInfo(string inputFile)
         {
-            return await FFmpeg.GetMediaInfo(inputFile);
+            return await _ffmpegWrapper.GetMediaInfo(inputFile);
         }
 
 

@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Gateway;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using System.Data;
 
 namespace Infra
 {
@@ -17,7 +18,7 @@ namespace Infra
 
         public void SaveChunk(Chunk chunk)
         {
-            using (var connection = new NpgsqlConnection(_connectionString))
+            using (IDbConnection connection = new NpgsqlConnection(_connectionString))
             {
                 connection.Open();
 

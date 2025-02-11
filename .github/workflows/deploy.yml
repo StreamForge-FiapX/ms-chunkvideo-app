@@ -37,7 +37,7 @@ jobs:
       # Constrói a imagem Docker da aplicação
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/ms-chunkvideo-app:latest .
+          docker build -t ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/ms-chunkvideo-app:latest ./ms-chunkvideo-app
 
       # Publica a imagem no ECR
       - name: Push Docker image to ECR

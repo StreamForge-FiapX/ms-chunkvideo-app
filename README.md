@@ -1,3 +1,7 @@
+![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=POSTECH-SOAT-SALA11_application-avalanches-pagamento-ms&metric=alert_status)
+![Bugs](https://sonarcloud.io/api/project_badges/measure?project=POSTECH-SOAT-SALA11_application-avalanches-pedido-ms&metric=bugs)
+![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=POSTECH-SOAT-SALA11_application-avalanches-pedido-ms&metric=code_smells)
+![Coverage](https://sonarcloud.io/api/project_badges/measure?project=POSTECH-SOAT-SALA11_application-avalanches-pagamento-ms&metric=coverage)
 # Documentação do Microserviço de Processamento de Vídeos: ms-chunkvideo-app
 
 Este documento descreve o fluxo de funcionamento do microserviço responsável pelo processamento inicial de vídeos enviados para o sistema. Ele aborda as etapas necessárias para o desenvolvimento, incluindo integrações, papéis no sistema e detalhamento técnico das ações esperadas.

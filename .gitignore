@@ -1,0 +1,11 @@
+*.dll
+*.pdb
+*.props
+*.targets
+*.bin
+*.BuildWithSkipAnalyzers
+*.cache
+*.editorconfig
+bin
+obj
+*.vs
